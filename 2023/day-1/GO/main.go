@@ -4,9 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
+	"strings"
 )
+
+var spelledNumbers = map[string]int{
+	"one":   1,
+	"two":   2,
+	"three": 3,
+	"four":  4,
+	"five":  5,
+	"six":   6,
+	"seven": 7,
+	"eight": 8,
+	"nine":  9,
+}
 
 func main() {
 	file, err := os.Open("input.txt")
@@ -32,10 +44,53 @@ func main() {
 }
 
 func extractDigits(s string) (int, int) {
-	digits := regexp.MustCompile("[0-9]").FindAllString(s, -1)
-	firstDigit, _ := strconv.Atoi(digits[0])
-	lastDigit, _ := strconv.Atoi(digits[len(digits)-1])
+	firstDigit := extractFirstDigit(s)
+	lastDigit := extractLastDigit(s)
+
 	return firstDigit, lastDigit
+}
+
+func extractLastDigit(s string) int {
+	for i := len(s); i >= 0; i-- {
+		substr := s[i:]
+
+		if substr == "" {
+			continue
+		}
+
+		digit, err := strconv.Atoi(string(s[i]))
+		if err == nil {
+			return digit
+		}
+
+		for word, number := range spelledNumbers {
+			if strings.Contains(substr, word) {
+				return number
+			}
+		}
+	}
+	return 0
+}
+
+func extractFirstDigit(s string) int {
+	for i := 0; i < len(s); i++ {
+		substr := s[:i+1]
+		if substr == "" {
+			continue
+		}
+
+		digit, err := strconv.Atoi(string(s[i]))
+		if err == nil {
+			return digit
+		}
+
+		for word, number := range spelledNumbers {
+			if strings.Contains(substr, word) {
+				return number
+			}
+		}
+	}
+	return 0
 }
 
 func concatenateNumber(num1 int, num2 int) int {
