@@ -4,20 +4,23 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 )
 
 func main() {
 	file, err := os.Open("input.txt")
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	var lines []string
+	var sum int
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		firstDigit, lastDigit := extractDigits(scanner.Text())
+		sum += concatenateNumber(firstDigit, lastDigit)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -25,35 +28,14 @@ func main() {
 		return
 	}
 
-	var digitsPerLine [][]int
-	for _, line := range lines {
-		var digits []int
-
-		for _, digit := range line {
-			if digit >= '0' && digit <= '9' {
-				number, _ := strconv.Atoi(string(digit))
-				digits = append(digits, number)
-			}
-		}
-
-		digitsPerLine = append(digitsPerLine, digits)
-	}
-
-	var sum int = 0
-	for _, digits := range digitsPerLine {
-		if len(digits) == 0 {
-			continue
-		}
-		if len(digits) == 1 {
-			sum += concatenateNumber(digits[0], digits[0])
-		}
-		if len(digits) > 1 {
-			sum += concatenateNumber(digits[0], digits[len(digits)-1])
-		}
-	}
-
 	fmt.Println(sum)
-	return
+}
+
+func extractDigits(s string) (int, int) {
+	digits := regexp.MustCompile("[0-9]").FindAllString(s, -1)
+	firstDigit, _ := strconv.Atoi(digits[0])
+	lastDigit, _ := strconv.Atoi(digits[len(digits)-1])
+	return firstDigit, lastDigit
 }
 
 func concatenateNumber(num1 int, num2 int) int {
